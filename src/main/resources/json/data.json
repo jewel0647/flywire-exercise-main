@@ -1,0 +1,91 @@
+[
+  {
+    "active": true,
+    "directReports": [
+      2,
+      3,
+      4
+    ],
+    "hireDate": "02/09/2001",
+    "id": 1,
+    "name": "Tim Silver",
+    "position": "CEO"
+  },
+  {
+    "active": false,
+    "directReports": [],
+    "hireDate": "10/12/2009",
+    "id": 2,
+    "name": "Liz Brown",
+    "position": "CFO"
+  },
+  {
+    "active": true,
+    "directReports": [
+      53,
+      89
+    ],
+    "hireDate": "10/12/2011",
+    "id": 3,
+    "name": "Rob Red",
+    "position": "CTO"
+  },
+  {
+    "active": true,
+    "directReports": [
+      97
+    ],
+    "hireDate": "01/05/2019",
+    "id": 4,
+    "name": "Jeff Pink",
+    "position": "CPO"
+  },
+  {
+    "active": false,
+    "directReports": [],
+    "hireDate": "10/12/2014",
+    "id": 5,
+    "name": "Alex Purple",
+    "position": "Accountant"
+  },
+  {
+    "active": true,
+    "directReports": [],
+    "hireDate": "10/12/2018",
+    "id": 24,
+    "name": "John Beige",
+    "position": "Accountant"
+  },
+  {
+    "active": true,
+    "directReports": [],
+    "hireDate": "11/06/2016",
+    "id": 53,
+    "name": "Seth Green",
+    "position": "Engineer"
+  },
+  {
+    "active": true,
+    "directReports": [],
+    "hireDate": "04/04/2017",
+    "id": 89,
+    "name": "Jennifer Orange",
+    "position": "Engineer"
+  },
+  {
+    "active": true,
+    "directReports": [],
+    "hireDate": "05/09/2017",
+    "id": 97,
+    "name": "Tina Yellow",
+    "position": "HR"
+  },
+  {
+    "active": true,
+    "directReports": [],
+    "hireDate": "10/12/2019",
+    "id": 129,
+    "name": "Amanda Teal",
+    "position": "Accountant"
+  }
+]

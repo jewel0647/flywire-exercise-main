@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        form {
+            margin-top: 20px;
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Employee Management</h1>
+
+<!-- Button to Fetch Active Employees -->
+<button onclick="fetchActiveEmployees()">Show Active Employees</button>
+
+<!-- Input Form to Fetch Employee by ID -->
+<div>
+    <h3>Find Employee by ID</h3>
+    <input type="text" id="employeeId" placeholder="Enter Employee ID">
+    <button onclick="fetchEmployeeById()">Find Employee</button>
+</div>
+
+<!-- Table to Display Employee Data -->
+<table id="employeeTable">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Position</th>
+        <th>Hire Date</th>
+        <th>Active</th>
+        <th>Direct Hires</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Employee rows will be inserted here dynamically -->
+    </tbody>
+</table>
+
+<!-- Form to Add New Employee -->
+<div>
+    <h3>Add New Employee</h3>
+    <form id="addEmployeeForm">
+        <div class="input-group">
+            <label for="newEmployeeId">ID:</label>
+            <input type="text" id="newEmployeeId" required>
+        </div>
+        <div class="input-group">
+            <label for="newEmployeeName">Name:</label>
+            <input type="text" id="newEmployeeName" required>
+        </div>
+        <div class="input-group">
+            <label for="newEmployeePosition">Position:</label>
+            <input type="text" id="newEmployeePosition" required>
+        </div>
+        <div class="input-group">
+            <label for="newEmployeeDirectReports">Direct Reports:</label>
+            <select id="newEmployeeDirectReports" multiple>
+                <!-- Options will be dynamically populated -->
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="newEmployeeManager">Manager:</label>
+            <select id="newEmployeeManager">
+                <!-- Options will be dynamically populated -->
+            </select>
+        </div>
+        <button type="button" onclick="addNewEmployee()">Add Employee</button>
+    </form>
+</div>
+
+<!-- Input Form to Deactivate Employee -->
+<div>
+    <h3>Deactivate Employee</h3>
+    <input type="text" id="deactivateEmployeeId" placeholder="Enter Employee ID">
+    <button onclick="deactivateEmployee()">Deactivate Employee</button>
+</div>
+
+<script>
+    // Fetch all employees for the multi-select and single-select inputs
+    function fetchAllEmployees() {
+        fetch('/employees/active')
+            .then(response => response.json())
+            .then(data => populateEmployeeOptions(data))
+            .catch(error => console.error('Error:', error));
+    }
+
+    // Populate select options for direct reports and manager
+    function populateEmployeeOptions(employees) {
+        const directReportsSelect = document.getElementById('newEmployeeDirectReports');
+        const managerSelect = document.getElementById('newEmployeeManager');
+
+        directReportsSelect.innerHTML = '';
+        managerSelect.innerHTML = '<option value="">None</option>'; // Add a 'None' option for manager
+
+        employees.forEach(employee => {
+            const option = document.createElement('option');
+            option.value = employee.id;
+            option.text = employee.name;
+
+            directReportsSelect.appendChild(option);
+
+            // We also add options for the manager selection
+            const managerOption = option.cloneNode(true);
+            managerSelect.appendChild(managerOption);
+        });
+    }
+
+    // Fetch and display active employees
+    function fetchActiveEmployees() {
+        fetch('/employees/active')
+            .then(response => response.json())
+            .then(data => {
+                displayEmployees(data);
+                removeDirectHiresColumn(); // Remove the "Direct Hires" column
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    // Fetch and display employee by ID with direct hire names
+    function fetchEmployeeById() {
+        const id = document.getElementById('employeeId').value;
+        fetch(`/employees/${id}`)
+            .then(response => response.json())
+            .then(data => {
+                displayEmployeesWithDirectReports(data);
+                addDirectHiresColumn(); // Add the "Direct Hires" column
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    // Display employees in the table without the "Direct Hires" column
+    function displayEmployees(employees) {
+        const tbody = document.getElementById('employeeTable').getElementsByTagName('tbody')[0];
+        tbody.innerHTML = '';  // Clear existing rows
+
+        employees.forEach(employee => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${employee.id}</td>
+                <td>${employee.name}</td>
+                <td>${employee.position}</td>
+                <td>${new Date(employee.hireDate).toLocaleDateString()}</td>
+                <td>${employee.active ? 'Yes' : 'No'}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    // Display a single employee with direct hire names in the table
+    function displayEmployeesWithDirectReports(employeeWithDirectReports) {
+        const tbody = document.getElementById('employeeTable').getElementsByTagName('tbody')[0];
+        tbody.innerHTML = '';  // Clear existing rows
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${employeeWithDirectReports.employee.id}</td>
+            <td>${employeeWithDirectReports.employee.name}</td>
+            <td>${employeeWithDirectReports.employee.position}</td>
+            <td>${new Date(employeeWithDirectReports.employee.hireDate).toLocaleDateString()}</td>
+            <td>${employeeWithDirectReports.employee.active ? 'Yes' : 'No'}</td>
+            <td>${employeeWithDirectReports.directHireNames.join(', ')}</td>
+        `;
+        tbody.appendChild(row);
+    }
+
+    // Add the "Direct Hires" column
+    function addDirectHiresColumn() {
+        const thead = document.getElementById('employeeTable').getElementsByTagName('thead')[0];
+        const ths = thead.getElementsByTagName('th');
+        if (ths.length < 6) {  // Ensure the column is not already added
+            const th = document.createElement('th');
+            th.innerText = 'Direct Hires';
+            thead.getElementsByTagName('tr')[0].appendChild(th);
+        }
+    }
+
+    // Remove the "Direct Hires" column
+    function removeDirectHiresColumn() {
+        const thead = document.getElementById('employeeTable').getElementsByTagName('thead')[0];
+        const ths = thead.getElementsByTagName('th');
+        if (ths.length === 6) {  // Ensure the column exists before removing
+            thead.getElementsByTagName('tr')[0].removeChild(ths[5]);
+        }
+    }
+
+    // Add a new employee
+    function addNewEmployee() {
+        const newEmployee = {
+            id: document.getElementById('newEmployeeId').value,
+            name: document.getElementById('newEmployeeName').value,
+            position: document.getElementById('newEmployeePosition').value,
+            active: true  // We set new employees as active by default
+        };
+
+        const directReports = Array.from(document.getElementById('newEmployeeDirectReports').selectedOptions)
+            .map(option => parseInt(option.value));
+
+        const managerId = document.getElementById('newEmployeeManager').value || null;
+
+        const url = managerId 
+            ? `/employees?managerId=${managerId}&directReportIds=${directReports.join(',')}`
+            : `/employees?directReportIds=${directReports.join(',')}`;
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newEmployee)
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Employee added successfully');
+                fetchActiveEmployees();
+            } else {
+                alert('Error adding employee');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Deactivate an employee
+    function deactivateEmployee() {
+        const id = document.getElementById('deactivateEmployeeId').value;
+
+        fetch(`/employees/${id}/deactivate`, {
+            method: 'POST'
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Employee deactivated successfully');
+                fetchActiveEmployees();
+            } else {
+                alert('Error deactivating employee');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Fetch all employees for the select options on page load
+    fetchAllEmployees();
+</script>
+
+</body>
+</html>
